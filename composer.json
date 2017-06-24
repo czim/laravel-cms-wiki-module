@@ -1,0 +1,33 @@
+{
+    "name": "czim/laravel-cms-wiki-module",
+    "description": "Laravel CMS: Wiki",
+    "keywords": [ "cms", "laravel", "module", "documentation", "wiki" ],
+    "homepage": "https://github.com/czim",
+    "require": {
+        "php": ">=5.5.9",
+        "cebe/markdown": "^1.0"
+    },
+    "require-dev": {
+        "czim/laravel-cms-core": "~1.3",
+        "phpunit/phpunit": "4.*",
+        "mockery/mockery": "0.9.*",
+        "scrutinizer/ocular": "~1.1",
+        "orchestra/testbench": "3.3.*",
+        "satooshi/php-coveralls": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Czim\\CmsWikiModule\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Czim\\CmsWikiModule\\Test\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
