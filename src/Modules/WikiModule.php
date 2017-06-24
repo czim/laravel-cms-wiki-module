@@ -126,9 +126,9 @@ class WikiModule implements ModuleInterface
         return [
             [
                 'id'               => 'wiki-home',
-                'label'            => config('cms-wiki.menu.home.label'),
-                'label_translated' => config('cms-wiki.menu.home.label_translated'),
-                'icon'             => config('cms-wiki.menu.home.icon'),
+                'label'            => config('cms-wiki-module.menu.home.label', 'Wiki'),
+                'label_translated' => config('cms-wiki-module.menu.home.label_translated'),
+                'icon'             => config('cms-wiki-module.menu.home.icon'),
                 'type'             => MenuPresenceType::ACTION,
                 'permissions'      => 'wiki.page.*',
                 'action'           => $this->core->prefixRoute('wiki.home'),

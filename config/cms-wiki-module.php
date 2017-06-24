@@ -28,8 +28,8 @@ return [
 
     'menu' => [
         'home' => [
-            'label'            => null,
-            'label_translated' => 'wiki.menu-home',
+            'label'            => 'Documentation',
+            'label_translated' => 'wiki.menu.home',
             'icon'             => null,
         ],
     ],
