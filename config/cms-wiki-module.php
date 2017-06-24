@@ -34,4 +34,22 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown
+    |--------------------------------------------------------------------------
+    |
+    | Configuration determining how markdown is parsed and rendered.
+    |
+    */
+
+    'markdown' => [
+
+        // The markdown flavor to parse.
+        // Available strategies: github, traditional and extra.
+        // See https://github.com/cebe/markdown for more information on each.
+        'strategy' => 'github',
+
+    ],
+
 ];

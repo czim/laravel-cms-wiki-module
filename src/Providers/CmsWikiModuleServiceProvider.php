@@ -3,7 +3,9 @@ namespace Czim\CmsWikiModule\Providers;
 
 use Czim\CmsCore\Contracts\Core\CoreInterface;
 use Czim\CmsCore\Support\Enums\Component;
+use Czim\CmsWikiModule\Contracts\Markdown\ParserFactoryInterface;
 use Czim\CmsWikiModule\Contracts\Repositories\WikiRepositoryInterface;
+use Czim\CmsWikiModule\Markdown\MarkdownParserFactory;
 use Czim\CmsWikiModule\Repositories\WikiRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -66,6 +68,7 @@ class CmsWikiModuleServiceProvider extends ServiceProvider
     protected function registerInterfaceBindings()
     {
         $this->app->singleton(WikiRepositoryInterface::class, WikiRepository::class);
+        $this->app->singleton(ParserFactoryInterface::class, MarkdownParserFactory::class);
 
         return $this;
     }

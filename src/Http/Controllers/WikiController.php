@@ -2,6 +2,8 @@
 namespace Czim\CmsWikiModule\Http\Controllers;
 
 use Czim\CmsCore\Contracts\Core\CoreInterface;
+use Czim\CmsWikiModule\Contracts\Markdown\ParserFactoryInterface;
+use Czim\CmsWikiModule\Contracts\Markdown\ParserInterface;
 use Czim\CmsWikiModule\Contracts\Repositories\WikiRepositoryInterface;
 
 class WikiController extends Controller
@@ -57,10 +59,16 @@ class WikiController extends Controller
             return abort(404, "Could not find wiki page for slug '{$slug}'");
         }
 
-        return view('cms-wiki::wiki.index', [
-            'isHome' => $home,
-            'title'  => $page->title,
-            'page'   => $page,
+        $body = $this->makeParser()->toHtml($page->body);
+
+        $lastEdit = $page->edits->first();
+
+        return view('cms-wiki::wiki.page', [
+            'isHome'   => $home,
+            'title'    => $page->title,
+            'body'     => $body,
+            'page'     => $page,
+            'lastEdit' => $lastEdit,
         ]);
     }
 
@@ -92,7 +100,16 @@ class WikiController extends Controller
      */
     public function edit($id)
     {
-        return null;
+        $page = $this->repository->findById($id);
+
+        if ( ! $page) {
+            return abort(404);
+        }
+
+        return view('cms-wiki::wiki.edit', [
+            'creating' => false,
+            'page'     => $page,
+        ]);
     }
 
     /**
@@ -115,6 +132,17 @@ class WikiController extends Controller
     public function destroy($id)
     {
         return null;
+    }
+
+    /**
+     * @return ParserInterface
+     */
+    protected function makeParser()
+    {
+        /** @var ParserFactoryInterface $factory */
+        $factory = app(ParserFactoryInterface::class);
+
+        return $factory->make(config('cms-wiki.markdown.strategy', 'github'));
     }
 
 }

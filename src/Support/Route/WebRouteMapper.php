@@ -49,7 +49,7 @@ class WebRouteMapper
                             'uses'       => 'WikiController@store',
                         ]);
 
-                        $router->get('edit', [
+                        $router->get('edit/{id}', [
                             'as'         => 'edit',
                             'middleware' => [cms_mw_permission('wiki.page.edit')],
                             'uses'       => 'WikiController@edit',

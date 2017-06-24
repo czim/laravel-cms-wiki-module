@@ -28,13 +28,19 @@
 
 @section('content')
 
-    <div class="page-header">
+    <div class="page-header wiki-header">
 
         <div class="btn-toolbar pull-right">
 
             <div class="btn-group">
+                @if (cms()->auth()->can('wiki.page.edit'))
+                    <a href="{{ cms_route("wiki.record.edit", [ $page->id ]) }}" class="btn btn-default">
+                        <i class="fa fa-edit"></i> &nbsp;
+                        {{ cms_trans('wiki.button.edit-page') }}
+                    </a>
+                @endif
                 @if (cms()->auth()->can('wiki.page.create'))
-                    <a href="{{ cms_route("wiki.page.create") }}" class="btn btn-primary">
+                    <a href="{{ cms_route("wiki.record.create") }}" class="btn btn-default">
                         <i class="fa fa-plus"></i> &nbsp;
                         {{ cms_trans('wiki.button.new-page') }}
                     </a>
@@ -45,8 +51,20 @@
         <h1>{{ $title }}</h1>
     </div>
 
-    <div id="wiki-page">
-        {!! $page->body !!}
+    <div class="wiki-body">
+        {!! $body !!}
+    </div>
+
+    <hr>
+
+    <div class="wiki-footer">
+        @if ($lastEdit)
+            <span class="pull-right text-muted small">
+                {{ cms_trans('wiki.page.last-edited-by') }}
+                <b>{{ $lastEdit->author }}</b>
+                (<em>{{ $lastEdit->date->format('Y-m-d H:i') }}</em>)
+            </span>
+        @endif
     </div>
 
 @endsection

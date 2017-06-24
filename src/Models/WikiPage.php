@@ -1,5 +1,6 @@
 <?php
 namespace Czim\CmsWikiModule\Models;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Class WikiPage
@@ -10,6 +11,7 @@ namespace Czim\CmsWikiModule\Models;
  * @property string         $body
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
+ * @property-read Collection|WikiPageEdit[] $edits
  */
 class WikiPage extends AbstractModel
 {
