@@ -171,14 +171,15 @@
 
             if (keyCode == 9) {
                 e.preventDefault();
-                var start = $(this).get(0).selectionStart;
-                var end = $(this).get(0).selectionEnd;
+                
+                var start = this.selectionStart,
+                    end   = this.selectionEnd;
 
                 $(this).val($(this).val().substring(0, start)
                     + "\t"
                     + $(this).val().substring(end));
 
-                $(this).get(0).selectionStart = $(this).get(0).selectionEnd = start + 1;
+                this.selectionStart = this.selectionEnd = start + 1;
             }
         });
     });
