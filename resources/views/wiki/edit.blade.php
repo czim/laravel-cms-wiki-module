@@ -164,6 +164,23 @@
         $(document).on('keyup', '#input-body', function() {
             convertWikiPageMarkdown();
         });
+
+        // Allow tab to indent in the textarea
+        $(document).delegate('#input-body', 'keydown', function(e) {
+            var keyCode = e.keyCode || e.which;
+
+            if (keyCode == 9) {
+                e.preventDefault();
+                var start = $(this).get(0).selectionStart;
+                var end = $(this).get(0).selectionEnd;
+
+                $(this).val($(this).val().substring(0, start)
+                    + "\t"
+                    + $(this).val().substring(end));
+
+                $(this).get(0).selectionStart = $(this).get(0).selectionEnd = start + 1;
+            }
+        });
     });
 </script>
 @cms_endscriptonce
