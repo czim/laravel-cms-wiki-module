@@ -5,8 +5,10 @@ use Czim\CmsCore\Contracts\Core\CoreInterface;
 use Czim\CmsCore\Support\Enums\Component;
 use Czim\CmsWikiModule\Contracts\Markdown\ParserFactoryInterface;
 use Czim\CmsWikiModule\Contracts\Repositories\WikiRepositoryInterface;
+use Czim\CmsWikiModule\Contracts\Support\WikiMemoryInterface;
 use Czim\CmsWikiModule\Markdown\MarkdownParserFactory;
 use Czim\CmsWikiModule\Repositories\WikiRepository;
+use Czim\CmsWikiModule\Support\Memory\WikiMemory;
 use Illuminate\Support\ServiceProvider;
 
 class CmsWikiModuleServiceProvider extends ServiceProvider
@@ -70,6 +72,7 @@ class CmsWikiModuleServiceProvider extends ServiceProvider
     {
         $this->app->singleton(WikiRepositoryInterface::class, WikiRepository::class);
         $this->app->singleton(ParserFactoryInterface::class, MarkdownParserFactory::class);
+        $this->app->singleton(WikiMemoryInterface::class, WikiMemory::class);
 
         return $this;
     }

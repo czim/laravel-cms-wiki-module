@@ -5,12 +5,12 @@
         $shortTitle = ucfirst(cms_trans('common.action.create')) . ' ' . cms_trans('common.terms.page');
         $title      = $shortTitle;
         $formAction = cms_route('wiki.page.store');
-        $cancelUrl  = cms_route('wiki.home');
+        $cancelUrl  = $previousUrl ?: cms_route('wiki.home');
     } else {
         $shortTitle = ucfirst(cms_trans('common.action.edit')) . ' ' . cms_trans('common.terms.page');
         $title      = $shortTitle . ': ' . $page->slug;
         $formAction = cms_route('wiki.page.update', [ $page->getKey() ]);
-        $cancelUrl  = cms_route('wiki.page', [ $page->slug ]);
+        $cancelUrl  = $previousUrl ?: cms_route('wiki.page', [ $page->slug ]);
     }
 @endphp
 
@@ -141,11 +141,10 @@
         var convertWikiPageMarkdown = function() {
 
             var converter = new showdown.Converter({
-                    tables: true,
-                    tasklists: true,
-                    smoothLivePreview: true,
-
-                });
+                tables           : true,
+                tasklists        : true,
+                smoothLivePreview: true
+            });
 
             @php
                 $flavor = config('cms-wiki.module.markdown.strategy')

@@ -6,9 +6,11 @@ use Czim\CmsCore\Support\Enums\FlashLevel;
 use Czim\CmsWikiModule\Contracts\Markdown\ParserFactoryInterface;
 use Czim\CmsWikiModule\Contracts\Markdown\ParserInterface;
 use Czim\CmsWikiModule\Contracts\Repositories\WikiRepositoryInterface;
+use Czim\CmsWikiModule\Contracts\Support\WikiMemoryInterface;
 use Czim\CmsWikiModule\Http\Requests\CreateWikiPageRequest;
 use Czim\CmsWikiModule\Http\Requests\UpdateWikiPageRequest;
 use Czim\CmsWikiModule\Models\WikiPage;
+use Czim\CmsWikiModule\Support\Memory\WikiMemory;
 
 class WikiController extends Controller
 {
@@ -17,6 +19,11 @@ class WikiController extends Controller
      * @var WikiRepositoryInterface
      */
     protected $repository;
+
+    /**
+     * @var WikiMemoryInterface
+     */
+    protected $memory;
 
     /**
      * When visiting a page by slug that does not exist yet,
@@ -29,14 +36,17 @@ class WikiController extends Controller
     /**
      * @param CoreInterface           $core
      * @param WikiRepositoryInterface $repository
+     * @param WikiMemoryInterface     $memory
      */
     public function __construct(
         CoreInterface $core,
-        WikiRepositoryInterface $repository
+        WikiRepositoryInterface $repository,
+        WikiMemoryInterface $memory
     ) {
         parent::__construct($core);
 
         $this->repository = $repository;
+        $this->memory     = $memory;
     }
 
 
@@ -67,16 +77,21 @@ class WikiController extends Controller
             return abort(404, "Could not find wiki page for slug '{$slug}'");
         }
 
+        $previousUrl = $this->getPreviousUrl();
+        $this->memory->pushPageToHistory($slug);
+
         $body = $this->makeParser()->toHtml($page->body);
 
         $lastEdit = $page->edits->first();
 
         return view('cms-wiki::wiki.page', [
-            'isHome'   => $home,
-            'title'    => $page->title,
-            'body'     => $body,
-            'page'     => $page,
-            'lastEdit' => $lastEdit,
+            'isHome'      => $home,
+            'title'       => $page->title,
+            'body'        => $body,
+            'page'        => $page,
+            'lastEdit'    => $lastEdit,
+            'history'     => $this->memory->getPageHistory(),
+            'previousUrl' => $previousUrl,
         ]);
     }
 
@@ -108,6 +123,8 @@ class WikiController extends Controller
     {
         $pages = $this->repository->getAll();
 
+        $this->memory->pushPageToHistory(WikiMemory::INDEX_SLUG);
+
         return view('cms-wiki::wiki.index', [
             'pages' => $pages,
         ]);
@@ -127,8 +144,9 @@ class WikiController extends Controller
         }
 
         return view('cms-wiki::wiki.edit', [
-            'creating' => true,
-            'page'     => $page,
+            'creating'    => true,
+            'page'        => $page,
+            'previousUrl' => $this->getPreviousUrl(),
         ]);
     }
 
@@ -172,8 +190,9 @@ class WikiController extends Controller
         }
 
         return view('cms-wiki::wiki.edit', [
-            'creating' => false,
-            'page'     => $page,
+            'creating'    => false,
+            'page'        => $page,
+            'previousUrl' => $this->getPreviousUrl(),
         ]);
     }
 
@@ -244,4 +263,25 @@ class WikiController extends Controller
     {
         return config('cms-wiki-module.home.slug');
     }
+
+    /**
+     * Returns URL to the previous page in the wiki history.
+     *
+     * @return string
+     */
+    protected function getPreviousUrl()
+    {
+        $slug = array_last($this->memory->getPageHistory());
+
+        if (null === $slug || false === $slug) {
+            return null;
+        }
+
+        if ($slug === WikiMemory::INDEX_SLUG) {
+            return cms_route('wiki.page.index');
+        }
+
+        return cms_route('wiki.page', [ $slug ]);
+    }
+
 }
