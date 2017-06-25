@@ -33,6 +33,8 @@ class MarkdownParserFactory
                 break;
         }
 
+        $strategyInstance->html5 = true;
+
         return new MarkdownParser($strategyInstance);
     }
 

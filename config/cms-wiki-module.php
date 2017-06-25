@@ -52,4 +52,20 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Editor
+    |--------------------------------------------------------------------------
+    |
+    | Wiki editor configuration settings.
+    |
+    */
+
+    'editor' => [
+
+        // The amount of rows to use for the page body textarea
+        'rows' => 20,
+
+    ],
+
 ];

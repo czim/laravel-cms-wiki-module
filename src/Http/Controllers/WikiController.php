@@ -2,9 +2,13 @@
 namespace Czim\CmsWikiModule\Http\Controllers;
 
 use Czim\CmsCore\Contracts\Core\CoreInterface;
+use Czim\CmsCore\Support\Enums\FlashLevel;
 use Czim\CmsWikiModule\Contracts\Markdown\ParserFactoryInterface;
 use Czim\CmsWikiModule\Contracts\Markdown\ParserInterface;
 use Czim\CmsWikiModule\Contracts\Repositories\WikiRepositoryInterface;
+use Czim\CmsWikiModule\Http\Requests\CreateWikiPageRequest;
+use Czim\CmsWikiModule\Http\Requests\UpdateWikiPageRequest;
+use Czim\CmsWikiModule\Models\WikiPage;
 
 class WikiController extends Controller
 {
@@ -13,6 +17,14 @@ class WikiController extends Controller
      * @var WikiRepositoryInterface
      */
     protected $repository;
+
+    /**
+     * When visiting a page by slug that does not exist yet,
+     * the create page can be shown with this slug prefilled.
+     *
+     * @var null|string
+     */
+    protected $createSlug;
 
     /**
      * @param CoreInterface           $core
@@ -28,32 +40,28 @@ class WikiController extends Controller
     }
 
 
+    // ------------------------------------------------------------------------------
+    //      Browsing
+    // ------------------------------------------------------------------------------
+
     /**
      * Action: wiki page or home page.
      *
      * @param string|null $slug
      * @return mixed
      */
-    public function index($slug = null)
+    public function page($slug = null)
     {
-        $homeSlug = config('cms-wiki-module.home.slug');
-
-        if (null === $slug) {
-            // Load the home page, if one is available.
-            // Otherwise, show a placeholder page.
-            $slug = $homeSlug;
-
-            if ( ! $slug) {
-                return abort(404, "No wiki home page defined");
-            }
-        }
-
-        $home = $slug === $homeSlug;
+        $home = $slug === $this->getHomeSlug();
         $page = $this->repository->findBySlug($slug);
 
+        // If we cannot find the page, and we have rights to create it,
+        // allow the user to do so. Otherwise, throw a 404.
         if ( ! $page) {
-            if ($home) {
 
+            if (cms()->auth()->can('wiki.page.create')) {
+                $this->createSlug = $slug;
+                return $this->create();
             }
 
             return abort(404, "Could not find wiki page for slug '{$slug}'");
@@ -73,23 +81,80 @@ class WikiController extends Controller
     }
 
     /**
+     * Action: wiki home page.
+     *
+     * @return mixed
+     */
+    public function home()
+    {
+        $slug = $this->getHomeSlug();
+
+        if ( ! $slug) {
+            return abort(404, "No wiki home page defined");
+        }
+
+        return redirect()->to(cms_route('wiki.page', [ $slug ]));
+    }
+
+
+    // ------------------------------------------------------------------------------
+    //      CRUD
+    // ------------------------------------------------------------------------------
+
+    /**
+     * Action: all pages listing.
+     */
+    public function index()
+    {
+        $pages = $this->repository->getAll();
+
+        return view('cms-wiki::wiki.index', [
+            'pages' => $pages,
+        ]);
+    }
+
+    /**
      * Action: form to create a new page record.
      *
      * @return mixed
      */
     public function create()
     {
-        return null;
+        $page = new WikiPage;
+
+        if ($this->createSlug) {
+            $page->slug = $this->createSlug;
+        }
+
+        return view('cms-wiki::wiki.edit', [
+            'creating' => true,
+            'page'     => $page,
+        ]);
     }
 
     /**
      * Action: store a new page record.
      *
+     * @param CreateWikiPageRequest $request
      * @return mixed
      */
-    public function store()
+    public function store(CreateWikiPageRequest $request)
     {
-        return null;
+        $page = $this->repository->create($request->input('title'), $request->input('body'), $request->input('slug'));
+
+        if ( ! $page) {
+            return abort(500, 'Failed to create page');
+        }
+
+        cms_flash(
+            cms_trans(
+                'wiki.flash.success-page-create',
+                [ 'record' => $page->id ]
+            ),
+            FlashLevel::SUCCESS
+        );
+
+        return redirect()->to(cms_route('wiki.page.edit', [ $page->id ]));
     }
 
     /**
@@ -115,12 +180,25 @@ class WikiController extends Controller
     /**
      * Action: update a new page record.
      *
-     * @param int $id
+     * @param UpdateWikiPageRequest $request
+     * @param int                   $id
      * @return mixed
      */
-    public function update($id)
+    public function update(UpdateWikiPageRequest $request, $id)
     {
-        return null;
+        if ( ! $this->repository->update($id, $request->input('title'), $request->input('body'))) {
+            return abort(500, 'Failed to update page');
+        }
+
+        cms_flash(
+            cms_trans(
+                'wiki.flash.success-page-edit',
+                [ 'record' => $id ]
+            ),
+            FlashLevel::SUCCESS
+        );
+
+        return redirect()->to(cms_route('wiki.page.edit', [ $id ]));
     }
 
     /**
@@ -131,7 +209,19 @@ class WikiController extends Controller
      */
     public function destroy($id)
     {
-        return null;
+        if ( ! $this->repository->delete($id)) {
+            return abort(500, "Failed to delete wiki page #{$id}");
+        }
+
+        cms_flash(
+            cms_trans(
+                'wiki.flash.success-page-delete',
+                [ 'record' => $id ]
+            ),
+            FlashLevel::SUCCESS
+        );
+
+        return redirect()->to(cms_route('wiki.home'));
     }
 
     /**
@@ -145,4 +235,13 @@ class WikiController extends Controller
         return $factory->make(config('cms-wiki.markdown.strategy', 'github'));
     }
 
+    /**
+     * Returns the slug for the home page.
+     *
+     * @return string
+     */
+    protected function getHomeSlug()
+    {
+        return config('cms-wiki-module.home.slug');
+    }
 }

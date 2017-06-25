@@ -30,7 +30,8 @@ class CmsWikiModuleServiceProvider extends ServiceProvider
         $this->registerConfig()
              ->loadViews()
              ->registerInterfaceBindings()
-             ->publishMigrations();
+             ->publishMigrations()
+             ->publishAssets();
     }
 
 
@@ -91,6 +92,18 @@ class CmsWikiModuleServiceProvider extends ServiceProvider
     protected function getMigrationPath()
     {
         return database_path($this->core->config('database.migrations.path'));
+    }
+
+    /**
+     * @return $this
+     */
+    protected function publishAssets()
+    {
+        $this->publishes([
+            realpath(dirname(__DIR__)) . '/../resources/assets/js' => public_path('_cms/js/wiki'),
+        ], 'assets');
+
+        return $this;
     }
 
     /**

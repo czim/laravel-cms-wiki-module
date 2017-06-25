@@ -35,11 +35,11 @@ interface WikiRepositoryInterface
      *
      * @param string      $title
      * @param string      $body
-     * @param string      $author
-     * @param string|null $slug
+     * @param string      $slug
+     * @param string|null $author
      * @return WikiPage
      */
-    public function create($title, $body, $author, $slug = null);
+    public function create($title, $body, $slug, $author = null);
 
     /**
      * Updates existing wiki page by ID.
@@ -47,11 +47,11 @@ interface WikiRepositoryInterface
      * @param string      $id
      * @param string      $title
      * @param string      $body
-     * @param string      $author
      * @param string|null $slug
+     * @param string|null $author
      * @return bool
      */
-    public function update($id, $title, $body, $author, $slug = null);
+    public function update($id, $title, $body, $slug = null, $author = null);
 
     /**
      * Deletes a wiki page.

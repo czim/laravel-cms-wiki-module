@@ -12,6 +12,8 @@ class WikiPageEdit extends AbstractModel
 {
     protected $table = 'wiki_page_edits';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'author',
         'date',

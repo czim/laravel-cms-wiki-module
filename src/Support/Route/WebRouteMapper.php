@@ -22,7 +22,7 @@ class WebRouteMapper
 
                 $router->get('/', [
                     'as'   => 'home',
-                    'uses' => 'WikiController@index',
+                    'uses' => 'WikiController@home',
                 ]);
 
                 $router->get('page/{slug}', [
@@ -32,10 +32,15 @@ class WebRouteMapper
 
                 $router->group(
                     [
-                        'as'     => 'record.',
+                        'as'     => 'page.',
                         'prefix' => 'record',
                     ],
                     function (Router $router) {
+
+                        $router->get('/', [
+                            'as'   => 'index',
+                            'uses' => 'WikiController@index',
+                        ]);
 
                         $router->get('create', [
                             'as'         => 'create',
@@ -55,7 +60,7 @@ class WebRouteMapper
                             'uses'       => 'WikiController@edit',
                         ]);
 
-                        $router->post('{id}', [
+                        $router->put('{id}', [
                             'as'         => 'update',
                             'middleware' => [cms_mw_permission('wiki.page.edit')],
                             'uses'       => 'WikiController@update',

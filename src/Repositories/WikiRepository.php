@@ -49,11 +49,11 @@ class WikiRepository implements WikiRepositoryInterface
      *
      * @param string      $title
      * @param string      $body
-     * @param string      $author
-     * @param string|null $slug
+     * @param string      $slug
+     * @param string|null $author
      * @return WikiPage
      */
-    public function create($title, $body, $author, $slug = null)
+    public function create($title, $body, $slug, $author = null)
     {
         if (null === $slug) {
             // todo generate unique slug
@@ -61,8 +61,8 @@ class WikiRepository implements WikiRepositoryInterface
 
         $page = new WikiPage([
             'title' => $title,
-            'body' => $body,
-            'slug' => $slug,
+            'body'  => $body,
+            'slug'  => $slug,
         ]);
 
         if ( ! $page->save() || ! $page->exists) {
@@ -82,11 +82,11 @@ class WikiRepository implements WikiRepositoryInterface
      * @param string      $id
      * @param string      $title
      * @param string      $body
-     * @param string      $author
      * @param string|null $slug
+     * @param string|null $author
      * @return bool
      */
-    public function update($id, $title, $body, $author, $slug = null)
+    public function update($id, $title, $body, $slug = null, $author = null)
     {
         if ( ! ($page = $this->findById($id))) {
             throw (new ModelNotFoundException('Could not find WikiPage'))
@@ -95,13 +95,16 @@ class WikiRepository implements WikiRepositoryInterface
 
         $page->title = $title;
         $page->body  = $body;
-        $page->slug  = $slug;
+
+        if (null !== $slug) {
+            $page->slug = $slug;
+        }
 
         if ( ! $page->save()) {
             return false;
         }
 
-        $this->markPageEdited($page);
+        $this->markPageEdited($page, $author);
 
         return true;
     }
@@ -109,7 +112,7 @@ class WikiRepository implements WikiRepositoryInterface
     /**
      * Deletes a page.
      *
-     * @param int  $id
+     * @param int $id
      * @return bool
      */
     public function delete($id)
@@ -124,14 +127,15 @@ class WikiRepository implements WikiRepositoryInterface
     /**
      * Marks an existing page as edited now, by the CMS user.
      *
-     * @param WikiPage $page
+     * @param WikiPage    $page
+     * @param string|null $author
      */
-    protected function markPageEdited(WikiPage $page)
+    protected function markPageEdited(WikiPage $page, $author = null)
     {
-        $author = null;
-
-        if ($user = cms()->auth()->user()) {
-            $author = $user->getUsername();
+        if (null === $author) {
+            if ($user = cms()->auth()->user()) {
+                $author = $user->getUsername();
+            }
         }
 
         $page->edits()->save(
